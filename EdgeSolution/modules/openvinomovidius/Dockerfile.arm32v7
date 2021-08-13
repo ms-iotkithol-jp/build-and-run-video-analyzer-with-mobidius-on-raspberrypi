@@ -1,0 +1,71 @@
+FROM arm32v7/python:3.7-slim-buster
+
+SHELL ["/bin/bash", "-c"]
+
+RUN apt-get update && \
+    apt-get install -y cmake && \
+    apt-get install -y  libffi-dev libbz2-dev liblzma-dev  libncurses5-dev libgdbm-dev zlib1g-dev libreadline-dev libssl-dev tk-dev libncursesw5-dev libc6-dev openssl wget git libatlas-base-dev  liblapack-dev gfortran python3-dev python3-pip libpython3-dev python3-numpy python3-h5py ffmpeg libopenexr-dev libgtk-3-dev ca-certificates iproute2 && \
+    apt-get install -y libusb-1.0-0-dev udev && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN mkdir /work
+COPY * /work/
+
+WORKDIR /build
+
+ENV INTEL_OPENVINO_DIR /opt/intel/openvino_2021
+
+RUN wget https://storage.openvinotoolkit.org/repositories/openvino/packages/2021.4/l_openvino_toolkit_runtime_raspbian_p_2021.4.582.tgz && \
+    mkdir -p /opt/intel/openvino_2021 && \
+    tar -xf l_openvino_toolkit_runtime_raspbian_p_2021.4.582.tgz --strip 1 -C /opt/intel/openvino_2021 && \
+    usermod -a -G users "$(whoami)" && \
+    source /opt/intel/openvino_2021/bin/setupvars.sh && \
+#    cat /opt/intel/openvino_2021/bin/setupvars.sh >> ~/.bashrc && \
+    rm *.tgz
+
+RUN sh /work/install_NCS_udev_rules.sh
+
+RUN pip3 install --upgrade pip
+
+RUN pip3 install cython
+
+RUN pip3 install https://www.piwheels.org/simple/numpy/numpy-1.19.5-cp37-cp37m-linux_armv7l.whl
+RUN pip3 install https://www.piwheels.org/simple/opencv-python/opencv_python-4.5.3.56-cp37-cp37m-linux_armv7l.whl
+RUN pip3 install https://www.piwheels.org/simple/pillow/Pillow-8.3.1-cp37-cp37m-linux_armv7l.whl#sha256=dce0a6e85ddc74cefec738d9939befb0ecd78560cca8d0dd1e95ae8533127c9d
+RUN pip3 install flask[async]
+RUN pip3 install requests
+# following order is so important.
+RUN pip3 install aiohttp
+RUN pip3 install cryptography==2.1.4
+RUN pip3 install azure-storage-blob==12.0.0
+RUN pip3 install azure-mgmt-storage
+RUN pip3 install azure-iot-device~=2.7.0
+
+# ENVIRONMENT SETTING FOR OPENVINO
+ENV INTEL_CVSDK_DIR ${INTEL_OPENVINO_DIR}
+#RUN echo "$INTEL_CVSDK_DIR"
+ENV InferenceEngine_DIR ${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/share
+ENV HDDL_INSTALL_DIR ${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/external/hddl
+ENV LD_LIBRARY_PATH ${INTEL_OPENVINO_DIR}/opencv/lib:${INTEL_OPENVINO_DIR}/deployment_tools/ngraph/lib:${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/external/hddl/lib:${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/external/omp/lib:${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/external/gna/lib:${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/external/mkltiny_lnx/lib:${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/lib/armv7l
+ENV ngraph_DIR ${INTEL_OPENVINO_DIR}/deployment_tools/ngraph/cmake
+ENV OpenCV_DIR ${INTEL_OPENVINO_DIR}/opencv/cmake
+ENV PATH ${INTEL_OPENVINO_DIR}/deployment_tools/model_optimizer://deployment_tools/model_optimizer:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV PYTHONPATH ${INTEL_OPENVINO_DIR}/python/python3.7:${INTEL_OPENVINO_DIR}/python/python3:${INTEL_OPENVINO_DIR}/deployment_tools/model_optimizer://deployment_tools/model_optimizer
+
+# CHECK ENVIRONMENT SETTINGS
+RUN echo "INTEL_OPENVINO_DIR = ${INTEL_OPENVINO_DIR}"
+RUN echo "INTEL_CVSDK_DIR = ${INTEL_CVSDK_DIR}"
+RUN echo "InferenceEngine_DIR = ${InferenceEngine_DIR}"
+RUN echo "HDDL_INSTALL_DIR = ${HDDL_INSTALL_DIR}"
+RUN echo "LD_LIBRARY_PATH = ${LD_LIBRARY_PATH}"
+RUN echo "ngraph_DIR = ${ngraph_DIR}"
+RUN echo "OpenCV_DIR = ${OpenCV_DIR}"
+RUN echo "PATH = ${PATH}"
+RUN echo "PYTHONPATH = ${PYTHONPATH}"
+
+EXPOSE 8888
+
+WORKDIR /work
+# RUN pwd
+# RUN ls -la
+CMD [ "python3", "./app.py"]
