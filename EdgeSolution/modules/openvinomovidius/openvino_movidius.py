@@ -79,7 +79,7 @@ class OpenvinoMovidius:
 
         return 0
 
-    def Score(self, input):
+    def Score(self, input, inferenceMark):
         # ---------------------------Step 6. Prepare input---------------------------------------------------------------------
         if self.status == 0:
             log.warning('model has not been loaded!')
@@ -148,14 +148,16 @@ class OpenvinoMovidius:
                 log.info(f'Found: label = {label}, confidence = {confidence:.2f}, ' f'coords = ({xmin}, {ymin}), ({xmax}, {ymax})')
 
                 # Draw a bounding box on a output image
-                # cv2.rectangle(output_image, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
-
-            # cv2.imwrite('out.bmp', output_image)
-        # log.info('Image out.bmp created!')
+                if inferenceMark:
+                    cv2.rectangle(output_image, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
+        output_filename = 'out.bmp'
+        if inferenceMark:
+            cv2.imwrite(output_filename, output_image)
+            log.info('Image out.bmp created!')
 
         self.scored_time = datetime.datetime.now()
         
-        return detectedObjects
+        return detectedObjects, output_filename
 
     def GetStatus(self):
         return self.status

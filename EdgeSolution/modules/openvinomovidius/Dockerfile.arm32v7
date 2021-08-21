@@ -3,6 +3,7 @@ FROM arm32v7/python:3.7-slim-buster
 SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && \
+    apt-get install -y sudo && \
     apt-get install -y cmake && \
     apt-get install -y  libffi-dev libbz2-dev liblzma-dev  libncurses5-dev libgdbm-dev zlib1g-dev libreadline-dev libssl-dev tk-dev libncursesw5-dev libc6-dev openssl wget git libatlas-base-dev  liblapack-dev gfortran python3-dev python3-pip libpython3-dev python3-numpy python3-h5py ffmpeg libopenexr-dev libgtk-3-dev ca-certificates iproute2 && \
     apt-get install -y libusb-1.0-0-dev udev && \
@@ -19,17 +20,18 @@ RUN wget https://storage.openvinotoolkit.org/repositories/openvino/packages/2021
     mkdir -p /opt/intel/openvino_2021 && \
     tar -xf l_openvino_toolkit_runtime_raspbian_p_2021.4.582.tgz --strip 1 -C /opt/intel/openvino_2021 && \
     usermod -a -G users "$(whoami)" && \
-    source /opt/intel/openvino_2021/bin/setupvars.sh && \
+#    source /opt/intel/openvino_2021/bin/setupvars.sh && \
 #    cat /opt/intel/openvino_2021/bin/setupvars.sh >> ~/.bashrc && \
     rm *.tgz
 
-RUN sh /work/install_NCS_udev_rules.sh
+RUN sh /opt/intel/openvino_2021/install_dependencies/install_NCS_udev_rules.sh
 
 RUN pip3 install --upgrade pip
 
 RUN pip3 install cython
 
-RUN pip3 install https://www.piwheels.org/simple/numpy/numpy-1.19.5-cp37-cp37m-linux_armv7l.whl
+# RUN pip3 install https://www.piwheels.org/simple/numpy/numpy-1.19.5-cp37-cp37m-linux_armv7l.whl
+RUN pip3 install numpy
 RUN pip3 install https://www.piwheels.org/simple/opencv-python/opencv_python-4.5.3.56-cp37-cp37m-linux_armv7l.whl
 RUN pip3 install https://www.piwheels.org/simple/pillow/Pillow-8.3.1-cp37-cp37m-linux_armv7l.whl#sha256=dce0a6e85ddc74cefec738d9939befb0ecd78560cca8d0dd1e95ae8533127c9d
 RUN pip3 install flask[async]
