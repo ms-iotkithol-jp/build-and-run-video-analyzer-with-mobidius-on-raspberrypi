@@ -81,16 +81,20 @@ yourrepository/openvinomovidius:version
 ```
 
 <b><u>Module Twins Desired Properties</u></b>:  
-```
+```json
 {
-    "model": {
-        "url": "<- url of model.tgz ->",
-        "filename": "model.tgz",
-        "name": "face-detection-adas-0001.xml",
-        "label": "face-detection-adas-0001-label.txt"
-    }
+  "model": {
+    "url": "<- url of model.tgz ->",
+    "filename": "model.tgz",
+    "name": "face-detection-adas-0001.xml",
+    "label": "face-detection-adas-0001-label.txt"
+  },
+  "send-telemetry": true | false
 }
 ```
+When you specify "send-telemetry" property as true, this module send telemetry of scored results at each frame processing.
+
+
 
 <b><u>Optional</u></b>:
 OpenVino Movidius module also can upload image detect something to Azure Blob Storage with Blob on Edge deployment by adding ENVIRONMENT VARIABLEs.  
@@ -102,3 +106,15 @@ Please refere https://docs.microsoft.com/azure/iot-edge/how-to-store-data-blob?v
 |BLOB_ON_EDGE_ACCOUNT_NAME|local account name specifyed in 'Blob on Edge' module|
 |BLOB_ON_EDGE_ACCOUNT_KEY|local account key specifyed in 'Blob on Edge' module|
 |BLOB_CONTAINER_NAME|container name specifyed in 'Blob on Edge' module|
+
+When above environment variables are set, you can add following settings in module twin desired properties.
+```json
+{
+  "upload": {
+    "interval-sec": 60,
+    "inference-mark": true | false
+  }
+}
+```
+To prevent frequent image uploads to blob container, you can set to upload image only when detected after seconds specified by  "interval-sec".  
+When you specify "inference-mark" as true, image marked with detected locations is uploaded.
