@@ -43,7 +43,7 @@ AI models can be download from OpenVino sites. Please refer https://docs.openvin
 To specify an AI model for this module, it is first necessary to create a file that compresses the AI model in TGZ format and store it in a downloadable location (for example, Azure Blob Storage) on the Internet.
 When AI model is 'face-detection-adas-0001.xml', the way to make tgz file is as follows.  
 ```
-tar cvzf model.tgz face-detection-adas-0001.xml face-detection-adas-0001-label.txt
+tar cvzf model.tgz face-detection-adas-0001.xml face-detection-adas-0001.bin face-detection-adas-0001-label.txt
 ```
 
 ### Deploy <b>openvinomovidius</b> module  

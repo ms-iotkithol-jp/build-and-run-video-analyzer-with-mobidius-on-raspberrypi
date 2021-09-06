@@ -150,9 +150,10 @@ class OpenvinoMovidius:
                 # Draw a bounding box on a output image
                 if inferenceMark:
                     cv2.rectangle(output_image, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
-
-        if len(detections):
+        log.info(f'ovmv - detections={len(detections)} - ovmv.scored_time={self.scored_time}')
+        if len(detectedObjects)>0:
             self.scored_time = datetime.datetime.now()
+            log.info('scored_time updated.')
 
         output_filename = 'out.bmp'
         if inferenceMark:

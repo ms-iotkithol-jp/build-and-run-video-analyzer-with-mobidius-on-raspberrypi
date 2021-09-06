@@ -195,7 +195,9 @@ async def main():
                 moduleClient.send_message_to_output(sendMsg, 'detection_monitor')
                 logging.info('Send detection message to detection_monitor of IoT Edge Runtime')
 
+            logging.info(f'check upload config - num={len(detectedObjects)}')
             if len(detectedObjects) > 0 :
+                logging.info(f'check - timeDelta={timeDelta}')
                 if timeDelta.seconds > intervalSec:
                     logging.info('scored long again.')
                     if fileUploader:
@@ -207,7 +209,6 @@ async def main():
                         fileUploader.upload(imageData, IOTEDGE_DEVICEID, '{0:%Y%m%d%H%M%S%f}'.format(datetime.datetime.now()), pilImage.format.lower())
                         if inferenceMark:
                             imageData.close()
-                scored_time = nowTime
                 respBody = {
                     'inferences' : detectedObjects
                 }
